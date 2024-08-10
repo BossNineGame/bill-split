@@ -1,14 +1,14 @@
 const NavBar = () => {
   // the state of navbar is read from url
   return (
-    <>
-      <div className="space-x-2 grid grid-cols-3 w-32">
-        <a>Home</a>
+    <div>
+      <div className="space-x-2 grid grid-cols-3 w-48">
+        <a>Upload</a>
         <a>Edit</a>
-        <a>Summary</a>
+        <a>Result</a>
       </div>
-      <hr className="border-slate-800" />
-    </>
+      <hr className="border-slate-700 my-4" />
+    </div>
   );
 };
 
