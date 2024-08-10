@@ -1,11 +1,24 @@
+import { useHash } from "../contexts/HashContext";
+
 const NavBar = () => {
-  // the state of navbar is read from url
+  const hash = useHash();
+
+  const highlight = (path: string) => {
+    return hash === path ? "text-white" : "text-slate-600";
+  };
+
   return (
     <div>
       <div className="space-x-2 grid grid-cols-3 w-48">
-        <a>Upload</a>
-        <a>Edit</a>
-        <a>Result</a>
+        <a href="/#" className={highlight("")}>
+          Upload
+        </a>
+        <a href="/#edit" className={highlight("#edit")}>
+          Edit
+        </a>
+        <a href="/#result" className={highlight("#result")}>
+          Result
+        </a>
       </div>
       <hr className="border-slate-700 my-4" />
     </div>
