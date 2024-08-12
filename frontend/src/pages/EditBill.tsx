@@ -66,7 +66,7 @@ const EditBill = () => {
           className="p-1 border border-slate-400 rounded-md text-slate-300"
           onClick={() =>
             addItem({
-              name: "Item name",
+              name: "",
               price: 0,
               quantity: 1,
             })

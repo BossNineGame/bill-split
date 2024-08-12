@@ -72,7 +72,6 @@ export const useBillStore = create<BillState & BillAction>()(
             state: {
               ...newValue.state,
               items: Array.from(newValue.state.items.entries()),
-              sd: "sdf",
             },
           });
           localStorage.setItem(name, str);
