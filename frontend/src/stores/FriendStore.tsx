@@ -1,9 +1,7 @@
 import { create } from "zustand";
 import { persist, StorageValue } from "zustand/middleware";
 
-export interface Friend {
-  name: string;
-}
+export type Friend = string;
 
 interface FriendState {
   friends: Set<Friend>;

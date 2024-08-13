@@ -7,6 +7,7 @@ import {
   BillItemKey,
   useBillStore,
 } from "../stores/BillStore";
+import { Friend, useFriendStore } from "../stores/FriendStore";
 
 const FriendListContext = createContext<{
   showFriend: BillItemKey;
@@ -70,11 +71,11 @@ const BillFriendList: React.FC<{ itemKey: string }> = ({ itemKey }) => {
 
   return (
     <div
-      className={`mx-4 p-2 rounded-lg ${
-        showFriend === itemKey ? "border border-slate-300" : ""
+      className={`border mx-1 px-2 py-1 rounded-lg ${
+        showFriend === itemKey ? "border-slate-300" : "border-transparent"
       }`}
     >
-      <div className="px-3 py-1 rounded-md">
+      <div className="py-1 rounded-md">
         {Array.from(billToFriends.get(itemKey) || []).map((friend) => (
           <Input
             key={`${itemKey}_name`}
@@ -96,10 +97,49 @@ const BillFriendList: React.FC<{ itemKey: string }> = ({ itemKey }) => {
 
 const FriendList: React.FC = () => {
   const { setShowFriend } = useContext(FriendListContext);
+  const { friends, addFriend, removeFriend } = useFriendStore();
+  const [newFriend, setNewFriend] = useState<Friend>("");
+
   return (
-    <div>
-      <button onClick={() => setShowFriend("")}> x </button>
-      FriendList
+    <div className="flex flex-col p-8 border border-slate-600">
+      <button
+        className="ml-auto size-8 content-end self-end"
+        onClick={() => setShowFriend("")}
+      >
+        x
+      </button>
+      <div className="flex flex-row gap-y-2 gap-x-1.5 flex-wrap flex-shrink justify-start">
+        {Array.from(friends).map((friend) => (
+          <button
+            className="flex flex-row border border-slate-500 hover:bg-slate-800 h-fit px-2 py-1 pb-1.5 rounded-full items-center"
+            key={friend}
+          >
+            <span className="col-span-3">{friend}</span>
+            <div className="w-2" />
+            <button
+              className="size-4 leading-none rounded-full hover:bg-slate-700"
+              onClick={() => removeFriend(friend)}
+            >
+              x
+            </button>
+          </button>
+        ))}
+      </div>
+      <div className="flex-grow" />
+      <div className=" grid grid-cols-2 gap-2">
+        <Input
+          className="p-0.5"
+          onChange={(e) => setNewFriend(e.target.value)}
+          placeholder="friend name"
+          value={newFriend}
+        />
+        <button
+          className="border border-slate-400 rounded-md text-slate-300"
+          onClick={() => addFriend(newFriend)}
+        >
+          <span>+ Add friend</span>
+        </button>
+      </div>
     </div>
   );
 };
@@ -110,12 +150,16 @@ const EditBill = () => {
 
   return (
     <FriendListContext.Provider value={{ showFriend, setShowFriend }}>
-      <div className={`grid ${showFriend ? "md:grid-cols-2" : "grid-cols-1"}`}>
+      <div
+        className={`grid gap-8 ${
+          showFriend ? "md:grid-cols-2" : "grid-cols-1"
+        }`}
+      >
         <div>
           <Input className="text-center" placeholder="Bill name" />
           <div className="flex flex-col mt-4 gap-6">
             {Array.from(items).map(([key, item]) => (
-              <div className="grid grid-rows-2 gap-3">
+              <div className="grid grid-rows-2 gap-1">
                 <BillItem key={key} itemKey={key} item={item} />
                 <BillFriendList key={key + "_friends"} itemKey={key} />
               </div>
