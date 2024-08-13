@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, StorageValue } from "zustand/middleware";
 
+export type BillItemKey = string;
 export interface BillItem {
   name: string;
   price: number;
@@ -15,7 +16,7 @@ export const BILL_KEYS: Record<keyof BillItem, keyof BillItem> = {
 
 interface BillState {
   name: string;
-  items: Map<string, BillItem>;
+  items: Map<BillItemKey, BillItem>;
 }
 
 interface BillAction {
@@ -56,7 +57,6 @@ export const useBillStore = create<BillState & BillAction>()(
       name: "bill-store",
       storage: {
         getItem: (name) => {
-          console.log(name);
           const str = localStorage.getItem(name);
           if (!str) return { state: mockBillState };
           const state = JSON.parse(str).state as BillState;
