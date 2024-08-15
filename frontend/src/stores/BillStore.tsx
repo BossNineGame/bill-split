@@ -40,18 +40,19 @@ export const useBillStore = create<BillState & BillAction>()(
       name: "",
       items: new Map(),
       setItem: (id, item) =>
-        set((state) => ({ items: new Map(state.items).set(id, item) })),
+        set((state) => ({ items: new Map(state.items.set(id, item)) })),
       addItem: (item) =>
         set((state) => ({
-          items: new Map(state.items).set(crypto.randomUUID(), item),
+          items: new Map(state.items.set(crypto.randomUUID(), item)),
         })),
       removeItem: (id) =>
-        set((state) => ({
-          items: (() => {
-            state.items.delete(id);
-            return new Map(state.items);
-          })(),
-        })),
+        set((state) => {
+          const newItems = new Map(state.items);
+          newItems.delete(id);
+          return {
+            items: newItems,
+          };
+        }),
     }),
     {
       name: "bill-store",

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, StorageValue } from "zustand/middleware";
-import { Friend } from "./FriendStore";
+import { Friend, useFriendStore } from "./FriendStore";
+import { useBillStore } from "./BillStore";
 
 type BillItemKey = string;
 
@@ -87,3 +88,29 @@ export const useBillFriendStore = create<
     }
   )
 );
+
+useBillStore.subscribe((state, prev) => {
+  const removedBills = Array.from(prev.items.keys()).filter(
+    (key) => state.items.get(key) === undefined
+  );
+  removedBills.forEach((billKey) => {
+    const allFriends = useFriendStore.getState().friends;
+    // can be optimized by using a map of friends to bills
+    allFriends.forEach((friend) =>
+      useBillFriendStore.getState().removeFriendFromBill(friend, billKey)
+    );
+  });
+});
+
+useFriendStore.subscribe((state, prev) => {
+  const removedFriends = Array.from(prev.friends).filter(
+    (friend) => !state.friends.has(friend)
+  );
+  removedFriends.forEach((friend) => {
+    const allBills = useBillStore.getState().items;
+    // can be optimized by using a map of friends to bills
+    Array.from(allBills.keys()).forEach((billKey) => {
+      useBillFriendStore.getState().removeFriendFromBill(friend, billKey);
+    });
+  });
+});

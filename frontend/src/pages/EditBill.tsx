@@ -14,7 +14,7 @@ const EditBill = () => {
     <FriendListContext.Provider value={{ showFriend, setShowFriend }}>
       <div className={`grid gap-8 md:grid-cols-3`}>
         <div className="col-span-2">
-          <Input className="text-center" placeholder="Bill name" />
+          <Input className="text-center" placeholder="New Bill" />
           <div className="flex flex-col mt-4 gap-6">
             {Array.from(items).map(([key, item]) => (
               <div key={key} className="grid grid-rows-2 gap-1">

@@ -40,7 +40,10 @@ const FriendList: React.FC = () => {
             <div className="w-2" />
             <button
               className="size-4 leading-none rounded-full hover:bg-slate-700"
-              onClick={() => removeFriend(friend)}
+              onClick={(e) => {
+                e.stopPropagation();
+                removeFriend(friend);
+              }}
             >
               x
             </button>

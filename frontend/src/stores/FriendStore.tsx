@@ -17,14 +17,17 @@ export const useFriendStore = create<FriendState & FriendActions>()(
     (set) => ({
       friends: new Set([]),
       addFriend: (friend) =>
-        set((state) => ({ friends: state.friends.add(friend) })),
-      removeFriend: (friend) =>
         set((state) => ({
-          friends: (() => {
-            state.friends.delete(friend);
-            return new Set(state.friends);
-          })(),
+          friends: new Set(state.friends.add(friend)),
         })),
+      removeFriend: (friend) =>
+        set((state) => {
+          const newFriends = new Set(state.friends);
+          newFriends.delete(friend);
+          return {
+            friends: newFriends,
+          };
+        }),
     }),
     {
       name: "friend-store",
