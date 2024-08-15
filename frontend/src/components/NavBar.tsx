@@ -8,7 +8,7 @@ const NavBar = () => {
   };
 
   return (
-    <div>
+    <div id="navbar">
       <div className="space-x-2 grid grid-cols-3 w-48">
         <a href="/#" className={highlight("")}>
           Upload

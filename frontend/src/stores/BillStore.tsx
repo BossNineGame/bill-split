@@ -20,6 +20,7 @@ interface BillState {
 }
 
 interface BillAction {
+  setName: (name: string) => void;
   setItem: (key: string, item: BillItem) => void;
   addItem: (item: BillItem) => void;
   removeItem: (key: string) => void;
@@ -39,6 +40,7 @@ export const useBillStore = create<BillState & BillAction>()(
     (set) => ({
       name: "",
       items: new Map(),
+      setName: (name) => set({ name }),
       setItem: (id, item) =>
         set((state) => ({ items: new Map(state.items.set(id, item)) })),
       addItem: (item) =>
