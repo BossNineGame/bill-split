@@ -21,12 +21,20 @@ const Result = () => {
               height: summaryElement.scrollHeight + 60,
               filter: (node) =>
                 !["save-image-button", "navbar"].includes(node.id),
-            }).then((dataURL) => {
-              const link = document.createElement("a");
-              link.href = dataURL;
-              link.download = "downloaded-image.png";
+            }).then(async (dataURL) => {
+              // const link = document.createElement("a");
+              // link.href = dataURL;
+              // link.download = "downloaded-image.png";
 
-              link.click();
+              // link.click();
+              const blob = await fetch(dataURL).then((res) => res.blob());
+
+              // save to clipboard
+              navigator.clipboard
+                .write([new ClipboardItem({ "image/png": blob })])
+                .then(() => {
+                  alert("Image saved to clipboard");
+                });
             });
           }}
         >
