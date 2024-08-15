@@ -33,7 +33,7 @@ const Result = () => {
           Save Image
         </button>
       </div>
-      <div className="grid md:grid-cols-3 gap-4 mb-8 w-full">
+      <div className="grid md:grid-cols-3 gap-4 w-full">
         {Array.from(friendToBills).map(([friend, bills]) => (
           <div
             className="grid grid-flow-row auto-rows-[min-content_auto_min-content] w-full gap-4 divide-slate-500 p-4 rounded-lg bg-slate-600/20 shadow-slate-700 shadow-inner backdrop-blur-sm"
