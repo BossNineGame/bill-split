@@ -9,12 +9,15 @@ const NavBar = () => {
 
   return (
     <div id="navbar">
-      <div className="space-x-2 grid grid-cols-3 w-48">
+      <div className="grid grid-flow-col auto-cols-min gap-4">
         <a href="/#" className={highlight("")}>
           Upload
         </a>
         <a href="/#edit" className={highlight("#edit")}>
           Edit
+        </a>
+        <a href="/#adjustments" className={highlight("#adjustments")}>
+          Adjustments
         </a>
         <a href="/#result" className={highlight("#result")}>
           Result

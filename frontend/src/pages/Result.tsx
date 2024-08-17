@@ -3,7 +3,7 @@ import { useBillStore } from "../stores/BillStore";
 import { toPng } from "html-to-image";
 
 const Result = () => {
-  const { friendToBills } = useBillFriendStore();
+  const { friendToBills, billToFriends } = useBillFriendStore();
   const { items, name } = useBillStore();
 
   return (
@@ -42,35 +42,47 @@ const Result = () => {
         </button>
       </div>
       <div className="grid md:grid-cols-3 gap-4 w-full">
-        {Array.from(friendToBills).map(([friend, bills]) => (
-          <div
-            className="grid grid-flow-row auto-rows-[min-content_auto_min-content] w-full gap-4 divide-slate-500 p-4 rounded-lg bg-slate-600/20 shadow-slate-700 shadow-inner backdrop-blur-sm"
-            key={friend}
-          >
-            <h2 className="text-lg text-white">{friend}</h2>
-            <div className="grid grid-flow-row auto-rows-min gap-1">
-              {Array.from(bills).map((billKey) => (
-                <div
-                  className="grid grid-flow-col gap-6 auto-cols-[auto_min-content] text-slate-400 text-sm"
-                  key={billKey}
-                >
-                  <p>{items.get(billKey)?.name}</p>
-                  <p className="">{items.get(billKey)?.price}</p>
+        {Array.from(friendToBills).map(([friend, bills]) => {
+          const itemPricePairs = Array.from(bills).map((billKey) => {
+            const item = items.get(billKey);
+            const friends = billToFriends.get(billKey);
+            if (!item || !friends) return [];
+            return [
+              item.name,
+              ((item.price * item.quantity) / friends.size).toFixed(2),
+            ];
+          });
+
+          return (
+            <div
+              className="grid grid-flow-row auto-rows-[min-content_auto_min-content] w-full gap-4 divide-slate-500 p-4 rounded-lg bg-slate-600/20 shadow-slate-700 shadow-inner backdrop-blur-sm"
+              key={friend}
+            >
+              <h2 className="text-lg text-white">{friend}</h2>
+              <div className="grid grid-flow-row auto-rows-min gap-1">
+                {itemPricePairs.map(([name, price]) => (
+                  <div
+                    className="grid grid-flow-col gap-6 auto-cols-[auto_min-content] text-slate-400 text-sm"
+                    key={name}
+                  >
+                    <p>{name}</p>
+                    <p>{price}</p>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <div className="grid grid-flow-col auto-cols-[auto_min-content] text-base text-white">
+                  <p> Total </p>
+                  <p>
+                    {itemPricePairs
+                      .reduce((acc, [, price]) => acc + parseFloat(price), 0)
+                      .toFixed(2)}
+                  </p>
                 </div>
-              ))}
-            </div>
-            <div>
-              <div className="grid grid-flow-col auto-cols-[auto_min-content] text-base text-white">
-                <p> Total </p>
-                <p>
-                  {Array.from(bills).reduce((acc, billKey) => {
-                    return acc + (items.get(billKey)?.price ?? 0);
-                  }, 0)}
-                </p>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

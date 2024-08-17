@@ -1,5 +1,6 @@
 import NavBar from "./components/NavBar";
 import { useHash } from "./contexts/HashContext";
+import Adjustments from "./pages/Adjustments";
 import EditBill from "./pages/EditBill";
 import Home from "./pages/Home";
 import Result from "./pages/Result";
@@ -16,6 +17,8 @@ export default function App() {
         <EditBill />
       ) : hash === "#result" ? (
         <Result />
+      ) : hash === "#adjustments" ? (
+        <Adjustments />
       ) : (
         <Home />
       )}
