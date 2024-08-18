@@ -8,9 +8,4 @@
       "path": "./tsconfig.node.json"
     }
   ],
-  "compilerOptions": {
-    "types": [
-      "unplugin-icons/types/react",
-    ]
-  }
 }

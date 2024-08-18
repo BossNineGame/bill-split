@@ -4,8 +4,6 @@ import { useBillFriendStore } from "../stores/BillFriendStore";
 import { Friend, useFriendStore } from "../stores/FriendStore";
 import Input from "./Input";
 import FluentDelete16Regular from "~icons/fluent/delete-16-regular";
-import FluentPersonAdd20Regular from "~icons/fluent/person-add-20-regular";
-import FluentDismiss12Regular from "~icons/fluent/dismiss-12-regular";
 
 const FriendList: React.FC = () => {
   const { selectedBill } = useContext(FriendListContext);
