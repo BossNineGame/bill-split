@@ -4,6 +4,7 @@ import { useBillFriendStore } from "../stores/BillFriendStore";
 import { Friend, useFriendStore } from "../stores/FriendStore";
 import Input from "./Input";
 import FluentDelete16Regular from "~icons/fluent/delete-16-regular";
+import { twMerge } from "tailwind-merge";
 
 const FriendList: React.FC = () => {
   const { selectedBill } = useContext(FriendListContext);
@@ -25,13 +26,16 @@ const FriendList: React.FC = () => {
       <div className="flex flex-row gap-y-2 gap-x-1.5 flex-wrap flex-shrink justify-start">
         {Array.from(friends).map((friend) => (
           <button
-            className={`flex flex-row gap-1 border border-slate-500 h-fit px-3 py-1 rounded-full items-center text-sm ${
-              isRemoveMode
-                ? "border-red-500"
-                : friendToBills.get(friend)?.has(selectedBill)
-                ? "bg-slate-700"
-                : "bg-transparent"
-            }`}
+            className={twMerge(
+              "flex flex-row gap-1 border border-slate-500 h-fit px-3 py-1 rounded-full items-center text-sm",
+              `${
+                isRemoveMode
+                  ? "border-red-500"
+                  : friendToBills.get(friend)?.has(selectedBill)
+                  ? "bg-slate-700"
+                  : "bg-transparent"
+              }`
+            )}
             onClick={() => {
               if (isRemoveMode) {
                 removeFriend(friend);
@@ -70,7 +74,10 @@ const FriendList: React.FC = () => {
           <span>Add</span>
         </button>
         <button
-          className={`text-slate-300 ${isRemoveMode ? "text-red-500" : ""}`}
+          className={twMerge(
+            "text-slate-300",
+            `${isRemoveMode ? "text-red-500" : ""}`
+          )}
           onClick={() => setIsRemoveMode((prev) => !prev)}
         >
           <FluentDelete16Regular className="h-full" />
