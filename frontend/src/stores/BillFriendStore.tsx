@@ -53,8 +53,8 @@ export const useBillFriendStore = create<
               state: { billToFriends: new Map(), friendToBills: new Map() },
             };
           const state = JSON.parse(str).state as {
-            billToFriends: string[][];
-            friendToBills: string[][];
+            billToFriends: [BillItemKey, string[]][];
+            friendToBills: [string, BillItemKey[]][];
           };
 
           return {
