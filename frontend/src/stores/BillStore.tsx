@@ -45,7 +45,7 @@ export const useBillStore = create<BillState & BillAction>()(
         set((state) => ({ items: new Map(state.items.set(id, item)) })),
       addItem: (item) =>
         set((state) => ({
-          items: new Map(state.items.set(crypto.randomUUID(), item)),
+          items: new Map(state.items).set(crypto.randomUUID(), item),
         })),
       removeItem: (id) =>
         set((state) => {

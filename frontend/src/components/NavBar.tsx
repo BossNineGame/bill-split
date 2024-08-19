@@ -16,9 +16,6 @@ const NavBar = () => {
         <a href="/#edit" className={highlight("#edit")}>
           Edit
         </a>
-        <a href="/#adjustments" className={highlight("#adjustments")}>
-          Adjustments
-        </a>
         <a href="/#result" className={highlight("#result")}>
           Result
         </a>

@@ -1,5 +1,6 @@
 import { BILL_KEYS, type BillItem, useBillStore } from "../stores/BillStore";
 import Input from "./Input";
+import FluentDismiss12Regular from "~icons/fluent/dismiss-12-regular";
 
 const BillItem: React.FC<{ itemKey: string; item: BillItem }> = ({
   itemKey,
@@ -16,10 +17,9 @@ const BillItem: React.FC<{ itemKey: string; item: BillItem }> = ({
   };
 
   return (
-    <div className="grid grid-cols-6 gap-4 items-center justify-between">
-      <div className="col-span-3 gap-2 flex flex-row">
-        <button onClick={() => removeItem(itemKey)}>x</button>
-        <div className="px-3 py-1 flex-grow bg-slate-700 rounded-md">
+    <div className="grid grid-flow-col auto-cols-[auto_4em_3em] gap-2 md:gap-4 items-center">
+      <div className="gap-2 flex flex-row">
+        <div className="flex flex-row items-center flex-grow px-2 py-1 bg-slate-700 rounded-md">
           <Input
             key={`${itemKey}_name`}
             className="p-0"
@@ -28,26 +28,32 @@ const BillItem: React.FC<{ itemKey: string; item: BillItem }> = ({
             value={item.name}
             onChange={handleItemChange}
           />
+          <button onClick={() => removeItem(itemKey)}>
+            <FluentDismiss12Regular className="text-sm text-center text-slate-300" />
+          </button>
         </div>
       </div>
       <Input
         key={`${itemKey}_price`}
         name={BILL_KEYS.price}
         type="number"
-        className="p-0 col-span-2"
+        className="py-0 px-1"
         placeholder="0"
         value={item.price.toString()}
         onChange={handleItemChange}
       />
-      <Input
-        key={`${itemKey}_quantity`}
-        name={BILL_KEYS.quantity}
-        type="number"
-        className="p-0 col-span-1"
-        placeholder="1"
-        value={item.quantity.toString()}
-        onChange={handleItemChange}
-      />
+      <div className="flex gap-1">
+        <span className="text-slate-700"> x </span>
+        <Input
+          key={`${itemKey}_quantity`}
+          name={BILL_KEYS.quantity}
+          type="number"
+          className="p-0"
+          placeholder="1"
+          value={item.quantity.toString()}
+          onChange={handleItemChange}
+        />
+      </div>
     </div>
   );
 };

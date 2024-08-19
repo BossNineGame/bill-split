@@ -1,34 +1,37 @@
-import { useContext } from "react";
 import { useBillFriendStore } from "../stores/BillFriendStore";
-import { FriendListContext } from "../contexts/FriendListContext";
-import FluentPersonEdit48Regular from "~icons/fluent/person-edit-48-regular";
+import { useFriendStore } from "../stores/FriendStore";
+import { twMerge } from "tailwind-merge";
+// import FluentPeople24Regular from "~icons/fluent/people-24-regular";
 
 const BillFriendList: React.FC<{ itemKey: string }> = ({ itemKey }) => {
-  const { billToFriends } = useBillFriendStore();
-  const { selectedBill, setSelectedBill } = useContext(FriendListContext);
+  const { billToFriends, removeFriendFromBill, mapFriendToBill } =
+    useBillFriendStore();
+  const { friends } = useFriendStore();
 
   return (
-    <div
-      className={`border-l-4 mx-1 px-2 py-1 ${
-        selectedBill === itemKey ? "border-slate-200" : "border-transparent"
-      }`}
-    >
-      <div className="flex flex-row flex-wrap gap-1 rounded-md items-center">
-        {Array.from(billToFriends.get(itemKey) || []).map((friend) => (
-          <span
-            key={friend}
-            className="border border-slate-700 text-slate-100 rounded-full px-2"
-          >
-            {friend}
-          </span>
-        ))}
+    <div className="flex flex-row flex-wrap gap-1 rounded-md items-center text-sm">
+      {/* <FluentPeople24Regular className="text-slate-300 mr-1" /> */}
+
+      {Array.from(friends).map((friend) => (
         <button
-          className="grid grid-cols-1 place-items-center leading-none rounded-full border size-6 border-none"
-          onClick={() => setSelectedBill(itemKey)}
+          key={friend}
+          className={twMerge(
+            "border border-slate-700 text-slate-600 rounded-full px-2",
+            billToFriends.get(itemKey)?.has(friend)
+              ? "border-slate-400 text-slate-300"
+              : ""
+          )}
+          onClick={() => {
+            if (billToFriends.get(itemKey)?.has(friend)) {
+              removeFriendFromBill(friend, itemKey);
+            } else {
+              mapFriendToBill(friend, itemKey);
+            }
+          }}
         >
-          <FluentPersonEdit48Regular className="text-sm" />
+          {friend}
         </button>
-      </div>
+      ))}
     </div>
   );
 };

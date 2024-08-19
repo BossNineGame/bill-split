@@ -41,8 +41,9 @@ export const useAdjustmentStore = create<AdjustmentState & AdjustmentAction>()(
         })),
       addAdjustment: (adjustment) =>
         set((state) => ({
-          adjustments: new Map(
-            state.adjustments.set(crypto.randomUUID(), adjustment)
+          adjustments: new Map(state.adjustments).set(
+            crypto.randomUUID(),
+            adjustment
           ),
         })),
       removeAdjustment: (key) =>
@@ -149,6 +150,19 @@ useBillStore.subscribe((state, prev) => {
         .removeBillFromAdjustment(billKey, adjustmentKey)
     );
   });
+
+  // Map new bills to all adjustments by default
+  const addedBills = Array.from(state.items.keys()).filter(
+    (key) => prev.items.get(key) === undefined
+  );
+  addedBills.forEach((billKey) => {
+    const allAdjustments = Array.from(
+      useAdjustmentStore.getState().adjustments.keys()
+    );
+    allAdjustments.forEach((adjustmentKey) =>
+      useAdjustmentStore.getState().mapBillToAdjustment(billKey, adjustmentKey)
+    );
+  });
 });
 
 useAdjustmentStore.subscribe((state, prev) => {
@@ -161,6 +175,19 @@ useAdjustmentStore.subscribe((state, prev) => {
       useAdjustmentStore
         .getState()
         .removeBillFromAdjustment(billKey, adjustmentKey)
+    );
+  });
+});
+
+useAdjustmentStore.subscribe((state, prev) => {
+  // Map new adjustments to all bills by default
+  const addedAdjustments = Array.from(state.adjustments.keys()).filter(
+    (key) => prev.adjustments.get(key) === undefined
+  );
+  addedAdjustments.forEach((adjustmentKey) => {
+    const allBills = Array.from(useBillStore.getState().items.keys());
+    allBills.forEach((billKey) =>
+      useAdjustmentStore.getState().mapBillToAdjustment(billKey, adjustmentKey)
     );
   });
 });
