@@ -20,7 +20,7 @@ const AdjustmentList = () => {
       <div className="flex flex-col gap-y-2 flex-wrap flex-shrink justify-start ">
         {Array.from(adjustments).map(([key, adjustment]) => (
           <div
-            className="flex px-3 py-2 rounded-md items-center text-sm border border-slate-400"
+            className="flex px-3 py-2 rounded-md items-center text-sm border border-slate-500"
             key={key}
           >
             <span className="flex-grow leading-none">{`${adjustment.name} ${adjustment.percentage}%`}</span>
