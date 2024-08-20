@@ -71,18 +71,18 @@ const Result = () => {
             ]
           ) as [Adjustment, string][];
 
-          const adjustmentPricePairsAcc = adjustmentPricePairs.map(
-            ([adjustment, price], idx) => [
-              adjustment,
-              (
-                (idx > 0
-                  ? (parseFloat(adjustmentPricePairs[idx - 1][1]) *
-                      adjustment.percentage) /
-                    100.0
-                  : 0) + parseFloat(price)
-              ).toFixed(2),
-            ]
-          );
+          // const adjustmentPricePairsAcc = adjustmentPricePairs.map(
+          //   ([adjustment, price], idx) => [
+          //     adjustment,
+          //     (
+          //       (idx > 0
+          //         ? (parseFloat(adjustmentPricePairs[idx - 1][1]) *
+          //             adjustment.percentage) /
+          //           100.0
+          //         : 0) + parseFloat(price)
+          //     ).toFixed(2),
+          //   ]
+          // );
 
           const totalPrice = (
             itemPricePairs.reduce(
@@ -112,15 +112,18 @@ const Result = () => {
                 ))}
               </div>
               <div className="grid grid-flow-row auto-rows-min gap-1">
-                {adjustmentPricePairsAcc.map(([adjustment, price]) => (
-                  <div
-                    className="grid grid-flow-col gap-6 auto-cols-[auto_min-content] text-slate-400 text-sm"
-                    key={adjustment.name}
-                  >
-                    <p>{`${adjustment.name} ${adjustment.percentage}%`}</p>
-                    <p>{price}</p>
-                  </div>
-                ))}
+                {adjustmentPricePairs.map(
+                  ([adjustment, price]) =>
+                    parseFloat(price) !== 0 && (
+                      <div
+                        className="grid grid-flow-col gap-6 auto-cols-[auto_min-content] text-slate-400 text-sm"
+                        key={adjustment.name}
+                      >
+                        <p>{`${adjustment.name} ${adjustment.percentage}%`}</p>
+                        <p>{price}</p>
+                      </div>
+                    )
+                )}
               </div>
               <div>
                 <div className="grid grid-flow-col auto-cols-[auto_min-content] text-base text-white">
