@@ -9,10 +9,10 @@ const BillItem: React.FC<{ itemKey: string; item: BillItem }> = ({
   const { setItem, removeItem } = useBillStore();
 
   const handleItemChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
+    const { name, value } = e.target;
     setItem(itemKey, {
       ...item,
-      [name]: type === "number" ? Number(value) : value,
+      [name]: value,
     });
   };
 
@@ -36,10 +36,10 @@ const BillItem: React.FC<{ itemKey: string; item: BillItem }> = ({
       <Input
         key={`${itemKey}_price`}
         name={BILL_KEYS.price}
-        type="number"
+        inputMode="numeric"
         className="py-0 px-1"
         placeholder="0"
-        value={item.price.toString()}
+        value={item.price}
         onChange={handleItemChange}
       />
       <div className="flex gap-1">
@@ -47,10 +47,10 @@ const BillItem: React.FC<{ itemKey: string; item: BillItem }> = ({
         <Input
           key={`${itemKey}_quantity`}
           name={BILL_KEYS.quantity}
-          type="number"
+          inputMode="numeric"
           className="p-0"
           placeholder="1"
-          value={item.quantity.toString()}
+          value={item.quantity}
           onChange={handleItemChange}
         />
       </div>

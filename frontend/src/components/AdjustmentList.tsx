@@ -1,17 +1,29 @@
 import { useState } from "react";
 import Input from "./Input";
 import FluentDismiss12Regular from "~icons/fluent/dismiss-12-regular";
-import { Adjustment, useAdjustmentStore } from "../stores/AdjustmentStore";
+import { useAdjustmentStore } from "../stores/AdjustmentStore";
 
 const AdjustmentList = () => {
   const { adjustments, addAdjustment, removeAdjustment } = useAdjustmentStore();
-  const [newAdjustment, setNewAdjustment] = useState<Adjustment>({
+  const [newAdjustment, setNewAdjustment] = useState<{
+    name: string;
+    percentage: string;
+  }>({
     name: "",
-    percentage: 0,
+    percentage: "",
   });
   const handleAddAdjustment = () => {
-    addAdjustment(newAdjustment);
-    setNewAdjustment({ name: "", percentage: 0 });
+    if (
+      newAdjustment.name === "" ||
+      newAdjustment.percentage === "" ||
+      Number.isNaN(Number(newAdjustment.percentage))
+    )
+      return;
+    addAdjustment({
+      name: newAdjustment.name,
+      percentage: Number(newAdjustment.percentage),
+    });
+    setNewAdjustment({ name: "", percentage: "" });
   };
 
   return (
@@ -47,15 +59,17 @@ const AdjustmentList = () => {
         />
         <div className="flex flex-row items-center">
           <Input
+            key="percentage"
+            name="percentage"
             className="p-0.5"
-            onChange={(e) =>
+            onChange={(e) => {
               setNewAdjustment((prev) => ({
                 ...prev,
-                percentage: Number(e.target.value),
-              }))
-            }
-            placeholder="Percentage"
-            type="number"
+                percentage: e.target.value,
+              }));
+            }}
+            placeholder="percentage"
+            inputMode="numeric"
             value={newAdjustment.percentage}
           />
           <span className="leading-none">%</span>
