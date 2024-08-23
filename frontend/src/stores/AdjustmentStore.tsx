@@ -13,6 +13,7 @@ interface AdjustmentState {
   adjustments: Map<AdjustmentKey, Adjustment>;
   adjustmentToBills: Map<AdjustmentKey, Set<BillItemKey>>;
   billToAdjustments: Map<BillItemKey, Set<AdjustmentKey>>;
+  adjustmentTree: Map<AdjustmentKey, AdjustmentKey>;
 }
 
 interface AdjustmentAction {
@@ -27,6 +28,10 @@ interface AdjustmentAction {
     billKey: BillItemKey,
     adjustmentKey: AdjustmentKey
   ) => void;
+  setAdjustmentParent: (
+    childKey: AdjustmentKey,
+    parentKey?: AdjustmentKey
+  ) => void;
 }
 
 export const useAdjustmentStore = create<AdjustmentState & AdjustmentAction>()(
@@ -35,23 +40,41 @@ export const useAdjustmentStore = create<AdjustmentState & AdjustmentAction>()(
       adjustments: new Map(),
       adjustmentToBills: new Map(),
       billToAdjustments: new Map(),
+      adjustmentTree: new Map(),
       setAdjustment: (key, adjustment) =>
         set((state) => ({
           adjustments: new Map(state.adjustments.set(key, adjustment)),
         })),
       addAdjustment: (adjustment) =>
-        set((state) => ({
-          adjustments: new Map(state.adjustments).set(
-            crypto.randomUUID(),
-            adjustment
-          ),
-        })),
+        set((state) => {
+          const newKey = crypto.randomUUID();
+          const allBills = Array.from(useBillStore.getState().items.keys());
+          allBills.forEach((billKey) =>
+            state.mapBillToAdjustment(billKey, newKey)
+          );
+          return {
+            adjustments: new Map(state.adjustments).set(newKey, adjustment),
+          };
+        }),
       removeAdjustment: (key) =>
         set((state) => {
           const newAdjustments = new Map(state.adjustments);
           newAdjustments.delete(key);
+          const allBills = Array.from(useBillStore.getState().items.keys());
+          allBills.forEach((billKey) => {
+            state.removeBillFromAdjustment(billKey, key);
+          });
+          const newAdjustmentTree = new Map(state.adjustmentTree);
+          newAdjustmentTree.forEach((parentKey, childKey) => {
+            if (parentKey === key) {
+              newAdjustmentTree.delete(childKey);
+            }
+          });
+          newAdjustmentTree.delete(key);
+
           return {
             adjustments: newAdjustments,
+            adjustmentTree: newAdjustmentTree,
           };
         }),
       mapBillToAdjustment: (billKey, adjustmentKey) =>
@@ -76,6 +99,15 @@ export const useAdjustmentStore = create<AdjustmentState & AdjustmentAction>()(
             billToAdjustments: new Map(state.billToAdjustments),
           };
         }),
+      setAdjustmentParent: (childKey, parentKey) =>
+        set((state) => {
+          const newAdjustmentTree = new Map(state.adjustmentTree);
+          if (parentKey === undefined) newAdjustmentTree.delete(childKey);
+          else newAdjustmentTree.set(childKey, parentKey);
+          return {
+            adjustmentTree: newAdjustmentTree,
+          };
+        }),
     }),
     {
       name: "adjustment-store",
@@ -88,12 +120,14 @@ export const useAdjustmentStore = create<AdjustmentState & AdjustmentAction>()(
                 adjustments: new Map(),
                 billToAdjustments: new Map(),
                 adjustmentToBills: new Map(),
+                adjustmentTree: new Map(),
               },
             };
           const state = JSON.parse(str).state as {
             adjustments: [AdjustmentKey, Adjustment][];
             billToAdjustments: [BillItemKey, AdjustmentKey[]][];
             adjustmentToBills: [AdjustmentKey, BillItemKey[]][];
+            adjustmentTree: [AdjustmentKey, AdjustmentKey][];
           };
           return {
             state: {
@@ -111,6 +145,7 @@ export const useAdjustmentStore = create<AdjustmentState & AdjustmentAction>()(
                   new Set(value),
                 ])
               ),
+              adjustmentTree: new Map(state.adjustmentTree),
             },
           };
         },
@@ -125,6 +160,9 @@ export const useAdjustmentStore = create<AdjustmentState & AdjustmentAction>()(
               adjustmentToBills: Array.from(
                 newValue.state.adjustmentToBills.entries()
               ).map(([key, value]) => [key, Array.from(value)]),
+              adjustmentTree: Array.from(
+                newValue.state.adjustmentTree.entries()
+              ),
             },
           });
           localStorage.setItem(name, str);
@@ -160,33 +198,6 @@ useBillStore.subscribe((state, prev) => {
       useAdjustmentStore.getState().adjustments.keys()
     );
     allAdjustments.forEach((adjustmentKey) =>
-      useAdjustmentStore.getState().mapBillToAdjustment(billKey, adjustmentKey)
-    );
-  });
-});
-
-useAdjustmentStore.subscribe((state, prev) => {
-  const removedAdjustments = Array.from(prev.adjustments.keys()).filter(
-    (key) => state.adjustments.get(key) === undefined
-  );
-  removedAdjustments.forEach((adjustmentKey) => {
-    const allBills = Array.from(useBillStore.getState().items.keys());
-    allBills.forEach((billKey) =>
-      useAdjustmentStore
-        .getState()
-        .removeBillFromAdjustment(billKey, adjustmentKey)
-    );
-  });
-});
-
-useAdjustmentStore.subscribe((state, prev) => {
-  // Map new adjustments to all bills by default
-  const addedAdjustments = Array.from(state.adjustments.keys()).filter(
-    (key) => prev.adjustments.get(key) === undefined
-  );
-  addedAdjustments.forEach((adjustmentKey) => {
-    const allBills = Array.from(useBillStore.getState().items.keys());
-    allBills.forEach((billKey) =>
       useAdjustmentStore.getState().mapBillToAdjustment(billKey, adjustmentKey)
     );
   });
