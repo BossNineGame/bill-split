@@ -33,14 +33,15 @@ const AdjustmentTree = ({ adjustmentKey }: { adjustmentKey?: string }) => {
   const { newChildKey, setNewChildKey } = useContext(AdjustmentTreeContext);
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="grid grid-flow-col auto-cols-[auto_min-content] gap-1 h-8 ">
+    <div className="flex flex-col">
+      <div className="grid grid-flow-col auto-cols-[auto_min-content] gap-1 h-8 justify-start items-center ">
         <button
           className={twMerge(
-            "w-full justify-self-center leading-none rounded-md items-center text-sm border border-slate-500",
+            "w-fit h-fit leading-none text-left text-sm border-b border-transparent",
             newChildKey && newChildKey !== adjustmentKey
-              ? "bg-slate-600"
-              : "bg-slate-700"
+              ? "border-slate-300 "
+              : "",
+            !adjustment && "text-slate-500"
           )}
           onClick={() => {
             if (newChildKey) {
@@ -70,8 +71,8 @@ const AdjustmentTree = ({ adjustmentKey }: { adjustmentKey?: string }) => {
           </div>
         )}
       </div>
-      <div className="mx-2 justify-center">
-        <div className="grid grid-flow-col auto-cols-fr gap-2">
+      <div className="justify-start">
+        <div className="grid grid-flow-row auto-cols-fr pl-3 ml-2 border-l border-slate-600 ">
           {Array.from(adjustments.keys()).map((childKey) => {
             const parent = adjustmentTree.get(childKey);
             return parent === adjustmentKey ? (
@@ -122,7 +123,7 @@ const AdjustmentList = () => {
           onChange={(e) =>
             setNewAdjustment((prev) => ({ ...prev, name: e.target.value }))
           }
-          placeholder="Adjustment name"
+          placeholder="name"
           onKeyDown={(e) => {
             if (e.key === "Enter" && newAdjustment.name !== "") {
               handleAddAdjustment();
@@ -141,7 +142,7 @@ const AdjustmentList = () => {
                 percentage: e.target.value,
               }));
             }}
-            placeholder="percentage"
+            placeholder="percent"
             inputMode="numeric"
             value={newAdjustment.percentage}
           />

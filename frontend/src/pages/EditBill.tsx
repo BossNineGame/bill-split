@@ -42,7 +42,7 @@ const EditBill = () => {
           </button>
         </div>
 
-        <div className="flex flex-col mt-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mt-4 gap-6">
           {Array.from(items).map(([key, item]) => (
             <div key={key} className="flex flex-col gap-2">
               <BillItem key={key} itemKey={key} item={item} />
@@ -51,7 +51,7 @@ const EditBill = () => {
             </div>
           ))}
           <button
-            className="p-1 border border-slate-400 rounded-md text-slate-300"
+            className="p-1 md:col-span-2 lg:col-span-3 border border-slate-400 rounded-md text-slate-300"
             onClick={() =>
               addItem({
                 name: "",
