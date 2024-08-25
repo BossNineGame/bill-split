@@ -139,7 +139,7 @@ const AdjustmentList = () => {
             onChange={(e) => {
               setNewAdjustment((prev) => ({
                 ...prev,
-                percentage: e.target.value,
+                percentage: e.target.value.replace(/[^0-9.-]+/g, ""),
               }));
             }}
             placeholder="percent"

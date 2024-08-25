@@ -1,94 +1,89 @@
-import { Adjustment, useAdjustmentStore } from "../stores/AdjustmentStore";
+import { AdjustmentKey, useAdjustmentStore } from "../stores/AdjustmentStore";
 import { useBillFriendStore } from "../stores/BillFriendStore";
-import { useBillStore } from "../stores/BillStore";
+import { BillItemKey, useBillStore } from "../stores/BillStore";
 import { toPng } from "html-to-image";
 import FluentClipboardImage20Regular from "~icons/fluent/clipboard-image-20-regular";
-import FluentClipboardLetter20Regular from "~icons/fluent/clipboard-letter-20-regular";
+// import FluentClipboardLetter20Regular from "~icons/fluent/clipboard-letter-20-regular";
+import { useFriendStore } from "../stores/FriendStore";
 
-const useFriendToPrices = () => {
-  const { friendToBills, billToFriends } = useBillFriendStore();
-  const { adjustments, adjustmentToBills, adjustmentTree } =
+type ItemPrices = Record<
+  BillItemKey,
+  Record<AdjustmentKey, number> & { originalPrice: number; totalPrice: number }
+>;
+
+const useItemPrices = () => {
+  const { adjustments, billToAdjustments, adjustmentTree } =
     useAdjustmentStore();
   const { items } = useBillStore();
 
-  return Array.from(friendToBills)
-    .filter(([, bills]) => bills.size > 0)
-    .reduce(
-      (acc, current) => {
-        const [friend, bills] = current;
-        const itemPricePairs = Array.from(bills)
-          .map((billKey) => {
-            const item = items.get(billKey);
-            const friends = billToFriends.get(billKey);
-            if (!item || !friends) return undefined;
-            return [
-              billKey,
-              ((item.price * item.quantity) / friends.size).toFixed(2),
-            ];
-          })
-          .filter((x) => x !== undefined) as [string, string][];
-
-        const adjustmentPricePairs = Array.from(adjustments.keys()).map(
-          (adjustmentKey) => {
-            let currentKey: string | undefined = adjustmentKey;
-            let totalAdjustmentPercent: number = 0;
-            while (currentKey !== undefined) {
-              const adjustment = adjustments.get(currentKey);
-              if (!adjustment) return totalAdjustmentPercent;
-              if (totalAdjustmentPercent === 0)
-                totalAdjustmentPercent = adjustment.percentage / 100;
-              else
-                totalAdjustmentPercent *=
-                  totalAdjustmentPercent < 0.0 && adjustment.percentage < 0.0
-                    ? (-1 * adjustment.percentage) / 100
-                    : adjustment.percentage / 100;
-              currentKey = adjustmentTree.get(currentKey);
-            }
-            const adjustment = adjustments.get(adjustmentKey);
-            return [
-              adjustment,
-              itemPricePairs
-                .reduce(
-                  (acc, [billKey, price]) =>
-                    adjustmentToBills.get(adjustmentKey)?.has(billKey)
-                      ? acc + totalAdjustmentPercent * parseFloat(price)
-                      : acc,
-                  0
-                )
-                .toFixed(2),
-            ];
-          }
-        ) as [Adjustment, string][];
-
-        const totalPrice = (
-          itemPricePairs.reduce(
-            (acc, [, price]) => acc + parseFloat(price),
-            0
-          ) +
-          adjustmentPricePairs.reduce(
-            (acc, [, price]) => acc + parseFloat(price),
-            0
-          )
-        ).toFixed(2);
-        return {
-          ...acc,
-          [friend]: { itemPricePairs, adjustmentPricePairs, totalPrice },
-        };
-      },
-      {} as Record<
-        string,
-        {
-          itemPricePairs: [string, string][];
-          adjustmentPricePairs: [Adjustment, string][];
-          totalPrice: string;
-        }
-      >
+  const getTotalAdjustmentPercentage = (
+    billKey: string,
+    adjustmentKey: string
+  ): number => {
+    const itemAdjustments = billToAdjustments.get(billKey);
+    const inner = (adjustmentKey: string | undefined): number => {
+      if (
+        !itemAdjustments ||
+        adjustmentKey === undefined ||
+        !itemAdjustments.has(adjustmentKey)
+      )
+        return 100;
+      const adjustment = adjustments.get(adjustmentKey)!;
+      return (
+        ((adjustment.percentage + 100) / 100) *
+        inner(adjustmentTree.get(adjustmentKey))
+      );
+    };
+    console.log(
+      items.get(billKey)!.name,
+      adjustments.get(adjustmentKey)!.name,
+      inner(adjustmentKey)
     );
+    return inner(adjustmentKey);
+  };
+
+  return Array.from(items).reduce<ItemPrices>((acc, [billKey, { price }]) => {
+    const itemAdjustments = billToAdjustments.get(billKey);
+    if (!itemAdjustments)
+      return {
+        ...acc,
+        [billKey]: { originalPrice: price, totalPrice: price },
+      };
+
+    const adjustmentPrices = Array.from(itemAdjustments.keys()).reduce<
+      Record<AdjustmentKey, number>
+    >(
+      (acc2, adjustmentKey) => ({
+        ...acc2,
+        [adjustmentKey]:
+          ((getTotalAdjustmentPercentage(billKey, adjustmentKey) - 100) / 100) *
+          price,
+      }),
+      {}
+    );
+
+    const totalPrice = Object.values(adjustmentPrices).reduce(
+      (acc, price) => acc + price,
+      price
+    );
+
+    return {
+      ...acc,
+      [billKey]: {
+        originalPrice: price,
+        ...adjustmentPrices,
+        totalPrice: totalPrice,
+      },
+    };
+  }, {});
 };
 
 const Result = () => {
-  const friendToPrices = useFriendToPrices();
+  const itemPrices = useItemPrices();
+  console.log(itemPrices);
   const { items, name } = useBillStore();
+  const { friends } = useFriendStore();
+  const { billToFriends } = useBillFriendStore();
 
   return (
     <div className="w-[900px] flex flex-col gap-4 ">
@@ -128,29 +123,32 @@ const Result = () => {
           </button>
         </div>
         <div className="grid grid-cols-3 gap-4 w-full">
-          {Object.entries(friendToPrices).map(
-            ([
-              friend,
-              { itemPricePairs, adjustmentPricePairs, totalPrice },
-            ]) => {
-              return (
-                <div
-                  className="grid grid-flow-row auto-rows-[min-content_auto_min-content] w-full gap-4 p-4 rounded-lg bg-slate-600/20 shadow-slate-700 shadow-inner backdrop-blur-sm"
-                  key={friend}
-                >
-                  <h2 className="text-lg text-white">{friend}</h2>
-                  <div className="grid grid-flow-row auto-rows-min gap-1">
-                    {itemPricePairs.map(([billKey, price]) => (
-                      <div
-                        className="grid grid-flow-col gap-6 auto-cols-[auto_min-content] text-slate-400 text-sm"
-                        key={billKey}
-                      >
-                        <p>{items.get(billKey)!.name}</p>
-                        <p>{price}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="grid grid-flow-row auto-rows-min gap-1">
+          {Array.from(friends).map((friend) => {
+            return (
+              <div
+                className="grid grid-flow-row auto-rows-[min-content_auto_min-content] w-full gap-4 p-4 rounded-lg bg-slate-600/20 shadow-slate-700 shadow-inner backdrop-blur-sm"
+                key={friend}
+              >
+                <h2 className="text-lg text-white">{friend}</h2>
+                <div className="grid grid-flow-row auto-rows-min gap-1">
+                  {Object.entries(itemPrices).map(
+                    ([billKey, { totalPrice }]) =>
+                      billToFriends.get(billKey)?.has(friend) && (
+                        <div
+                          className="grid grid-flow-col gap-6 auto-cols-[auto_min-content] text-slate-400 text-sm"
+                          key={billKey}
+                        >
+                          <p>{items.get(billKey)!.name}</p>
+                          <p>
+                            {(
+                              totalPrice / billToFriends.get(billKey)!.size
+                            ).toFixed(2)}
+                          </p>
+                        </div>
+                      )
+                  )}
+                </div>
+                {/* <div className="grid grid-flow-row auto-rows-min gap-1">
                     {adjustmentPricePairs.map(
                       ([adjustment, price]) =>
                         parseFloat(price) !== 0 && (
@@ -163,25 +161,33 @@ const Result = () => {
                           </div>
                         )
                     )}
-                  </div>
-                  <div>
-                    <div className="grid grid-flow-col auto-cols-[auto_min-content] text-base text-white">
-                      <p> Total </p>
-                      <p> {totalPrice} </p>
-                    </div>
+                  </div> */}
+                <div>
+                  <div className="grid grid-flow-col auto-cols-[auto_min-content] text-base text-white">
+                    <p> Total </p>
+                    <p>
+                      {Object.entries(itemPrices)
+                        .reduce(
+                          (acc, [billKey, { totalPrice }]) =>
+                            billToFriends.get(billKey)?.has(friend)
+                              ? totalPrice + acc
+                              : acc,
+                          0
+                        )
+                        .toFixed(2)}
+                    </p>
                   </div>
                 </div>
-              );
-            }
-          )}
+              </div>
+            );
+          })}
         </div>
         <div className="flex flex-row gap-4 px-2 py-1 text-2xl  rounded-full">
           <span>Total:</span>
           <span>
-            {`${Object.values(friendToPrices)
-              .reduce((acc, { totalPrice }) => acc + parseFloat(totalPrice), 0)
+            {Object.values(itemPrices)
+              .reduce((acc, { totalPrice }) => totalPrice + acc, 0)
               .toFixed(2)}
-          `}
           </span>
         </div>
       </div>
