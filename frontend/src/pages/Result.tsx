@@ -34,48 +34,48 @@ const useItemPrices = () => {
         inner(adjustmentTree.get(adjustmentKey))
       );
     };
-    console.log(
-      items.get(billKey)!.name,
-      adjustments.get(adjustmentKey)!.name,
-      inner(adjustmentKey)
-    );
     return inner(adjustmentKey);
   };
 
-  return Array.from(items).reduce<ItemPrices>((acc, [billKey, { price }]) => {
-    const itemAdjustments = billToAdjustments.get(billKey);
-    if (!itemAdjustments)
+  return Array.from(items).reduce<ItemPrices>(
+    (acc, [billKey, { price, quantity }]) => {
+      const itemAdjustments = billToAdjustments.get(billKey);
+      if (!itemAdjustments)
+        return {
+          ...acc,
+          [billKey]: { originalPrice: price, totalPrice: price },
+        };
+
+      const adjustmentPrices = Array.from(itemAdjustments.keys()).reduce<
+        Record<AdjustmentKey, number>
+      >(
+        (acc2, adjustmentKey) => ({
+          ...acc2,
+          [adjustmentKey]:
+            ((getTotalAdjustmentPercentage(billKey, adjustmentKey) - 100) /
+              100) *
+            price *
+            quantity,
+        }),
+        {}
+      );
+
+      const totalPrice = Object.values(adjustmentPrices).reduce(
+        (acc, price) => acc + price,
+        price
+      );
+
       return {
         ...acc,
-        [billKey]: { originalPrice: price, totalPrice: price },
+        [billKey]: {
+          originalPrice: price * quantity,
+          ...adjustmentPrices,
+          totalPrice: totalPrice * quantity,
+        },
       };
-
-    const adjustmentPrices = Array.from(itemAdjustments.keys()).reduce<
-      Record<AdjustmentKey, number>
-    >(
-      (acc2, adjustmentKey) => ({
-        ...acc2,
-        [adjustmentKey]:
-          ((getTotalAdjustmentPercentage(billKey, adjustmentKey) - 100) / 100) *
-          price,
-      }),
-      {}
-    );
-
-    const totalPrice = Object.values(adjustmentPrices).reduce(
-      (acc, price) => acc + price,
-      price
-    );
-
-    return {
-      ...acc,
-      [billKey]: {
-        originalPrice: price,
-        ...adjustmentPrices,
-        totalPrice: totalPrice,
-      },
-    };
-  }, {});
+    },
+    {}
+  );
 };
 
 const Result = () => {
@@ -170,7 +170,9 @@ const Result = () => {
                         .reduce(
                           (acc, [billKey, { totalPrice }]) =>
                             billToFriends.get(billKey)?.has(friend)
-                              ? totalPrice + acc
+                              ? totalPrice /
+                                  (billToFriends.get(billKey)?.size ?? 1) +
+                                acc
                               : acc,
                           0
                         )
@@ -182,7 +184,7 @@ const Result = () => {
             );
           })}
         </div>
-        <div className="flex flex-row gap-4 px-2 py-1 text-2xl  rounded-full">
+        <div className="flex flex-row gap-4 px-2 py-1 text-2xl rounded-full">
           <span>Total:</span>
           <span>
             {Object.values(itemPrices)
