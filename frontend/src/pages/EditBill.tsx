@@ -19,9 +19,9 @@ const EditBill = () => {
   return (
     <FriendListContext.Provider value={{ selectedBill, setSelectedBill }}>
       <div>
-        <div className="grid grid-flow-col auto-cols-[auto_min-content_min-content] gap-2 pl-4 pb-4 items-center">
+        <div className="grid grid-flow-col auto-cols-[auto_min-content_min-content] gap-2 pb-4 items-center">
           <Input
-            className="text-center p-1"
+            className="text-center py-1 px-2"
             placeholder="New Bill"
             value={name}
             onChange={(e) => {

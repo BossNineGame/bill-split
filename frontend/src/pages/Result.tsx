@@ -6,10 +6,12 @@ import FluentClipboardImage20Regular from "~icons/fluent/clipboard-image-20-regu
 // import FluentClipboardLetter20Regular from "~icons/fluent/clipboard-letter-20-regular";
 import { useFriendStore } from "../stores/FriendStore";
 
-type ItemPrices = Record<
-  BillItemKey,
-  Record<AdjustmentKey, number> & { originalPrice: number; totalPrice: number }
->;
+type Prices = Record<AdjustmentKey, number> & {
+  originalPrice: number;
+  totalPrice: number;
+};
+
+type ItemPrices = Record<BillItemKey, Prices>;
 
 const useItemPrices = () => {
   const { adjustments, billToAdjustments, adjustmentTree } =
@@ -30,8 +32,8 @@ const useItemPrices = () => {
         return 100;
       const adjustment = adjustments.get(adjustmentKey)!;
       return (
-        ((adjustment.percentage + 100) / 100) *
-        inner(adjustmentTree.get(adjustmentKey))
+        100 +
+        (adjustment.percentage * inner(adjustmentTree.get(adjustmentKey))) / 100
       );
     };
     return inner(adjustmentKey);
@@ -43,7 +45,10 @@ const useItemPrices = () => {
       if (!itemAdjustments)
         return {
           ...acc,
-          [billKey]: { originalPrice: price, totalPrice: price },
+          [billKey]: {
+            originalPrice: price * quantity,
+            totalPrice: price * quantity,
+          },
         };
 
       const adjustmentPrices = Array.from(itemAdjustments.keys()).reduce<
@@ -62,7 +67,7 @@ const useItemPrices = () => {
 
       const totalPrice = Object.values(adjustmentPrices).reduce(
         (acc, price) => acc + price,
-        price
+        price * quantity
       );
 
       return {
@@ -70,7 +75,7 @@ const useItemPrices = () => {
         [billKey]: {
           originalPrice: price * quantity,
           ...adjustmentPrices,
-          totalPrice: totalPrice * quantity,
+          totalPrice: totalPrice,
         },
       };
     },
@@ -80,10 +85,10 @@ const useItemPrices = () => {
 
 const Result = () => {
   const itemPrices = useItemPrices();
-  console.log(itemPrices);
   const { items, name } = useBillStore();
   const { friends } = useFriendStore();
-  const { billToFriends } = useBillFriendStore();
+  const { billToFriends, friendToBills } = useBillFriendStore();
+  const { adjustments } = useAdjustmentStore();
 
   return (
     <div className="w-[900px] flex flex-col gap-4 ">
@@ -132,7 +137,7 @@ const Result = () => {
                 <h2 className="text-lg text-white">{friend}</h2>
                 <div className="grid grid-flow-row auto-rows-min gap-1">
                   {Object.entries(itemPrices).map(
-                    ([billKey, { totalPrice }]) =>
+                    ([billKey, { originalPrice }]) =>
                       billToFriends.get(billKey)?.has(friend) && (
                         <div
                           className="grid grid-flow-col gap-6 auto-cols-[auto_min-content] text-slate-400 text-sm"
@@ -141,27 +146,37 @@ const Result = () => {
                           <p>{items.get(billKey)!.name}</p>
                           <p>
                             {(
-                              totalPrice / billToFriends.get(billKey)!.size
+                              originalPrice / billToFriends.get(billKey)!.size
                             ).toFixed(2)}
                           </p>
                         </div>
                       )
                   )}
                 </div>
-                {/* <div className="grid grid-flow-row auto-rows-min gap-1">
-                    {adjustmentPricePairs.map(
-                      ([adjustment, price]) =>
-                        parseFloat(price) !== 0 && (
-                          <div
-                            className="grid grid-flow-col gap-6 auto-cols-[auto_min-content] text-slate-400 text-xs"
-                            key={adjustment.name}
-                          >
-                            <p>{`${adjustment.name} ${adjustment.percentage}%`}</p>
-                            <p>{price}</p>
-                          </div>
-                        )
-                    )}
-                  </div> */}
+                <div className="grid grid-flow-row auto-rows-min gap-1">
+                  {Object.entries(
+                    Array.from(friendToBills.get(friend)!)
+                      .map(
+                        (billKey) =>
+                          [billKey, itemPrices[billKey]] as [string, Prices]
+                      )
+                      .reduce<Prices>((acc, [billKey, prices]) => {
+                        Object.keys(prices).forEach((key) => {
+                          acc[key] =
+                            (acc[key] ?? 0) +
+                            prices[key] / billToFriends.get(billKey)!.size;
+                        });
+                        return acc;
+                      }, {} as Prices)
+                  ).map(([key, price]) =>
+                    adjustments.get(key) ? (
+                      <div className="grid grid-flow-col gap-6 auto-cols-[auto_min-content] text-slate-400 text-sm">
+                        <p>{adjustments.get(key)?.name}</p>
+                        <p>{price.toFixed(2)}</p>
+                      </div>
+                    ) : null
+                  )}
+                </div>
                 <div>
                   <div className="grid grid-flow-col auto-cols-[auto_min-content] text-base text-white">
                     <p> Total </p>
