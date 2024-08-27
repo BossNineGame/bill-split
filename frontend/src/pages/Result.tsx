@@ -3,8 +3,9 @@ import { useBillFriendStore } from "../stores/BillFriendStore";
 import { BillItemKey, useBillStore } from "../stores/BillStore";
 import { toPng } from "html-to-image";
 import FluentClipboardImage20Regular from "~icons/fluent/clipboard-image-20-regular";
-// import FluentClipboardLetter20Regular from "~icons/fluent/clipboard-letter-20-regular";
+import FluentClipboardLetter20Regular from "~icons/fluent/clipboard-letter-20-regular";
 import { useFriendStore } from "../stores/FriendStore";
+import { useCallback } from "react";
 
 type Prices = Record<AdjustmentKey, number> & {
   originalPrice: number;
@@ -90,6 +91,51 @@ const Result = () => {
   const { billToFriends, friendToBills } = useBillFriendStore();
   const { adjustments } = useAdjustmentStore();
 
+  const handleCopyImage = useCallback(() => {
+    const appElement = document.getElementById("app")!;
+    const summaryElement = document.getElementById("summary")!;
+
+    toPng(appElement, {
+      width: summaryElement.scrollWidth + 60,
+      height: summaryElement.scrollHeight + 60,
+      filter: (node) => !["save-image-button", "navbar"].includes(node.id),
+    }).then(async (dataURL) => {
+      // const link = document.createElement("a");
+      // link.href = dataURL;
+      // link.download = "downloaded-image.png";
+
+      // link.click();
+      const blob = await fetch(dataURL).then((res) => res.blob());
+
+      // save to clipboard
+      navigator.clipboard
+        .write([new ClipboardItem({ "image/png": blob })])
+        .then(() => {
+          alert("Image saved to clipboard");
+        });
+    });
+  }, []);
+
+  const handleCopyText = () => {
+    navigator.clipboard.writeText(
+      `${name}\n${Array.from(friends)
+        .map(
+          (friend) =>
+            `- ${friend}: ${Object.entries(itemPrices)
+              .reduce(
+                (acc, [billKey, { totalPrice }]) =>
+                  billToFriends.get(billKey)?.has(friend)
+                    ? totalPrice / (billToFriends.get(billKey)?.size ?? 1) + acc
+                    : acc,
+                0
+              )
+              .toFixed(2)}`
+        )
+        .join("\n")}`
+    );
+    alert("Text saved to clipboard");
+  };
+
   return (
     <div className="w-[900px] flex flex-col gap-4 ">
       <div className="flex flex-col gap-4" id="summary">
@@ -98,33 +144,16 @@ const Result = () => {
           <button
             id="save-image-button"
             className="flex border border-slate-400 rounded-full size-8 items-center justify-center text-slate-300"
-            onClick={() => {
-              const appElement = document.getElementById("app")!;
-              const summaryElement = document.getElementById("summary")!;
-
-              toPng(appElement, {
-                width: summaryElement.scrollWidth + 60,
-                height: summaryElement.scrollHeight + 60,
-                filter: (node) =>
-                  !["save-image-button", "navbar"].includes(node.id),
-              }).then(async (dataURL) => {
-                // const link = document.createElement("a");
-                // link.href = dataURL;
-                // link.download = "downloaded-image.png";
-
-                // link.click();
-                const blob = await fetch(dataURL).then((res) => res.blob());
-
-                // save to clipboard
-                navigator.clipboard
-                  .write([new ClipboardItem({ "image/png": blob })])
-                  .then(() => {
-                    alert("Image saved to clipboard");
-                  });
-              });
-            }}
+            onClick={handleCopyImage}
           >
             <FluentClipboardImage20Regular />
+          </button>
+          <button
+            id="save-text-button"
+            className="flex border border-slate-400 rounded-full size-8 items-center justify-center text-slate-300"
+            onClick={() => handleCopyText()}
+          >
+            <FluentClipboardLetter20Regular />
           </button>
         </div>
         <div className="grid grid-cols-3 gap-4 w-full">
