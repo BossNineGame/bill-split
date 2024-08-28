@@ -4,11 +4,13 @@ import { useRef, useState } from "react";
 import Input from "../components/Input";
 import { getBillsFromImage } from "../services/openAi";
 import { BillItem, useBillStore } from "../stores/BillStore";
+import LineMdLoadingLoop from "~icons/line-md/loading-loop";
 
 const Home = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { addItem } = useBillStore();
   const [gptToken, setGptToken] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -29,7 +31,6 @@ const Home = () => {
             base64String = canvas.toDataURL("image/jpeg", quality);
             const fileSizeInMB =
               (base64String.length * (3 / 4)) / (1024 * 1024);
-            console.log(fileSizeInMB);
 
             if (fileSizeInMB > 20) {
               quality -= 0.1;
@@ -49,7 +50,7 @@ const Home = () => {
           bills.forEach((bill) => {
             addItem(bill);
           });
-
+          setIsLoading(false);
           alert("Add bills successfully, please proceed to edit page");
         };
         // Read the file as a data URL
@@ -63,6 +64,7 @@ const Home = () => {
       }
     } catch (e) {
       alert(`error, please try again ${e}`);
+      setIsLoading(false);
     }
   };
 
@@ -88,10 +90,22 @@ const Home = () => {
               accept="image/*"
               className="hidden"
               ref={fileInputRef}
-              onChange={(e) => handleImageUpload(e)}
+              onChange={(e) => {
+                setIsLoading(true);
+                handleImageUpload(e);
+              }}
             />
-            <FluentScanCamera48Filled className="size-36 mx-auto flex-grow" />
-            <h2>Scan a bill</h2>
+            {!isLoading ? (
+              <>
+                <FluentScanCamera48Filled className="size-36 mx-auto flex-grow" />
+                <h2>Scan a bill</h2>
+              </>
+            ) : (
+              <>
+                <LineMdLoadingLoop className="size-36 mx-auto flex-grow" />
+                <h2>Scanning...</h2>
+              </>
+            )}
           </button>
         </div>
         <a

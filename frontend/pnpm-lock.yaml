@@ -33,6 +33,9 @@ importers:
       '@iconify-json/fluent':
         specifier: ^1.1.62
         version: 1.1.62
+      '@iconify-json/line-md':
+        specifier: ^1.1.40
+        version: 1.1.40
       '@svgr/core':
         specifier: ^8.1.0
         version: 8.1.0(typescript@5.5.4)
@@ -362,6 +365,9 @@ packages:
 
   '@iconify-json/fluent@1.1.62':
     resolution: {integrity: sha512-+k1+XlL158AZNL4SlAwNOUy1rQSpKptq7MiTOEgCfFtL1H2UYOkwHS/BnfrePhpqg8UQpwphhvuUgUJRcFXdew==}
+
+  '@iconify-json/line-md@1.1.40':
+    resolution: {integrity: sha512-czbnFDIQfQyrC7HjFCJbHvmXEliwNKFBk49X/q/yOfIgQmDDc10sd/KXlxEgGW2iu3gJ98/WKLYDZxoWeAhv2Q==}
 
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
@@ -1994,6 +2000,10 @@ snapshots:
   '@humanwhocodes/retry@0.3.0': {}
 
   '@iconify-json/fluent@1.1.62':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/line-md@1.1.40':
     dependencies:
       '@iconify/types': 2.0.0
 
