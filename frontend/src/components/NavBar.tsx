@@ -1,4 +1,5 @@
 import { useHash } from "../contexts/HashContext";
+import MdiGithub from "~icons/mdi/github";
 
 const NavBar = () => {
   const hash = useHash();
@@ -9,7 +10,7 @@ const NavBar = () => {
 
   return (
     <div id="navbar">
-      <div className="grid grid-flow-col auto-cols-min gap-4">
+      <div className="grid grid-cols-[repeat(3,_min-content)_auto] gap-4 items-center">
         <a href="/#" className={highlight("")}>
           Upload
         </a>
@@ -18,6 +19,12 @@ const NavBar = () => {
         </a>
         <a href="/#result" className={highlight("#result")}>
           Result
+        </a>
+        <a
+          href="https://github.com/BossNineGame/bill-split"
+          className="place-self-end self-center text-xl"
+        >
+          <MdiGithub />
         </a>
       </div>
       <hr className="border-slate-700 my-4" />
