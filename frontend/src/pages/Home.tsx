@@ -80,6 +80,7 @@ const Home = () => {
               className="grow w-auto p-1"
               type="password"
               placeholder="sk-proj-...."
+              value={gptToken}
               onChange={(e) => setGptToken(e.target.value)}
             />
           </div>
