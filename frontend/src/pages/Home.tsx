@@ -9,7 +9,9 @@ import LineMdLoadingLoop from "~icons/line-md/loading-loop";
 const Home = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { addItem } = useBillStore();
-  const [gptToken, setGptToken] = useState<string>("");
+  const [gptToken, setGptToken] = useState<string>(
+    new URLSearchParams(window.location.search).get("gptToken") ?? ""
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
